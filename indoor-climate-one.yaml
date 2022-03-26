@@ -1,0 +1,103 @@
+esphome:
+  name: indoor-climate-one
+
+esp32:
+  # TODO: board isn't quire right
+  # https://github.com/platformio/platform-espressif32/pull/745
+  board: featheresp32
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  services:
+    - service: play_rtttl
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda 'return song_str;'
+
+# Enable over the air updates
+ota:
+
+# Enable webserver for fun
+web_server:
+  port: 80
+
+# Wifi connection
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true  # there is only one network around here, use that right away.
+# (I disabled the default fallback access point)
+
+# -------------------------
+# Components
+# -------------------------
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO27
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: "Onboard Button"
+    internal: true
+    on_press:
+      then:
+        - rtttl.play: Entertainer:d=4,o=5,b=140:8d,8d#,8e,c6,8e,c6,8e,2c.6,8c6,8d6,8d#6,8e6,8c6,8d6,e6,8b,d6,2c6,p,8d,8d#,8e,c6,8e,c6,8e,2c.6,8p,8a,8g,8f#,8a,8c6,e6,8d6,8c6,8a,2d6
+      # RR:d=4,o=5,b=200:8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,d6,8p,d6,8p,c6,8b,a.,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6.,p,8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,2g6,b,c6.,8b,a,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6
+# zelda_woods:d=4,o=5,b=140:8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8b6,8g6,2e6,8d6,8e6,8g6,2e6,8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8e7,8b6,2g6,8b6,8g6,8d6,2e6
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: false  # seems redundant as we know exactly what's on the bus!
+
+sensor:
+  - platform: scd4x
+    update_interval: 20s
+    co2:
+      name: "Room Sensor 1 - CO2"
+      id: "co2"
+    temperature:
+      name: "Room Sensor 1 - Temperature"
+      id: "temperature"
+    humidity:
+      name: "Room Sensor 1 - Humidity"
+      id: "humidity"
+
+output:
+  - platform: ledc
+    pin: GPIO25
+    id: buzzer
+
+rtttl:
+  output: buzzer
+
+status_led:
+  pin: GPIO2   # yes it's a stripping pin yada yada -.-
+
+light:
+  - platform: fastled_clockless
+    name: "Onboard RGB"
+    chipset: WS2812
+    pin: GPIO5
+    num_leds: 1
+    rgb_order: GRB
+    default_transition_length: 0s
+    internal: true
+  - platform: fastled_clockless
+    name: "External RGB"
+    chipset: WS2812
+    pin: GPIO26
+    num_leds: 1
+    rgb_order: RGB
+    default_transition_length: 0.5s
+    #internal: true
