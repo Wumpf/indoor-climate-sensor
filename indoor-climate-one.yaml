@@ -83,7 +83,7 @@ i2c:
 
 sensor:
   - platform: scd4x
-    update_interval: 10s
+    update_interval: 15s
     co2:
       name: "Room Sensor 1 - CO2"
       id: "co2"
@@ -115,7 +115,6 @@ sensor:
                 - globals.set:
                     id: enable_recoverysong
                     value: 'false'
-
     temperature:
       name: "Room Sensor 1 - Temperature"
       id: "temperature"
