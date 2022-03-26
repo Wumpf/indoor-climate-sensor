@@ -87,6 +87,16 @@ sensor:
     co2:
       name: "Room Sensor 1 - CO2"
       id: "co2"
+      # discard first value (it's typically garbage)
+      filters:
+        - lambda: |-
+            static bool first_run = true;
+            if (first_run) {
+              first_run = false;
+              return {};
+            } else {
+              return x;
+            }
       on_value:
         then:
           - light.addressable_set:
