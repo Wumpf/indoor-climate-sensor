@@ -1,7 +1,7 @@
 Indoor Climate Sensor
 =======================
 
-Simple ESPHome based indoor climate sensor with buzzer and LED
+Simple [ESPHome](https://esphome.io/) based indoor climate sensor with buzzer and color LED.
 
 
 Hardware used

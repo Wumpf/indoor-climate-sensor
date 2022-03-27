@@ -45,6 +45,12 @@ wifi:
 substitutions:
   recoverysong: Cantina:d=4, o=5, b=250:8a, 8p, 8d6, 8p, 8a, 8p, 8d6, 8p, 8a, 8d6, 8p, 8a, 8p, 8g#, a, 8a, 8g#, 8a, g, 8f#, 8g, 8f#, f., 8d., 16p, p., 8a, 8p, 8d6, 8p, 8a, 8p, 8d6, 8p, 8a, 8d6, 8p, 8a, 8p, 8g#, 8a, 8p, 8g, 8p, g., 8f#, 8g, 8p, 8c6, a#, a, g
   alarmsong: alarm:d=4,o=5,b=100:16e6,16e6,4p,16e6,16e6,4p,16e6,16e6,4p,16e6,16e6
+# RR:d=4,o=5,b=200:8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,d6,8p,d6,8p,c6,8b,a.,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6.,p,8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,2g6,b,c6.,8b,a,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6
+# zelda_woods:d=4,o=5,b=140:8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8b6,8g6,2e6,8d6,8e6,8g6,2e6,8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8e7,8b6,2g6,8b6,8g6,8d6,2e6
+# MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d
+# http://www.fodor.sk/Spectrum/rttl.htm
+# https://www.end2endzone.com/how-to-convert-arduino-code-to-actual-rtttl-melodies-using-librtttl-and-anyrtttl/
+
 
 globals:
   - id: enable_recoverysong
@@ -54,61 +60,58 @@ globals:
     type: bool
     initial_value: 'false'
 
+script:
+  - id: gradient_demo
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(running_gradient_demo);'
+          then:
+            - globals.set:
+                id: running_gradient_demo
+                value: 'true'
+            - lambda: 'set_light_color_to_gradient(0.0, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.1, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.2, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.3, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.4, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.5, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.6, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.7, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.8, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(0.9, 100, id(led_external));'
+            - delay: 0.3s
+            - lambda: 'set_light_color_to_gradient(1.0, 100, id(led_external));'
+            - globals.set:
+                id: running_gradient_demo
+                value: 'false'
+
 # -------------------------
 # Components
 # -------------------------
 
 binary_sensor:
   - platform: gpio
+    name: "Onboard Button"
     pin:
       number: GPIO27
       inverted: true
       mode:
         input: true
         pullup: true
-    name: "Onboard Button"
     internal: true
     on_press:
       then:
-        - if:
-            condition:
-              lambda: 'return !id(running_gradient_demo);'
-            then:
-              # CO2 gradient demo
-              - globals.set:
-                  id: running_gradient_demo
-                  value: 'true'
-              - lambda: 'set_light_color_to_gradient(0.0, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.1, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.2, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.3, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.4, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.5, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.6, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.7, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.8, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(0.9, 0, id(led_external));'
-              - delay: 0.3s
-              - lambda: 'set_light_color_to_gradient(1.0, 0, id(led_external));'
-              - globals.set:
-                  id: running_gradient_demo
-                  value: 'false'
-
-#- rtttl.play: RR:d=4,o=5,b=200:8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,d6,8p,d6,8p,c6,8b,a.,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6.,p,8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,2g6,b,c6.,8b,a,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6
-# RR:d=4,o=5,b=200:8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,d6,8p,d6,8p,c6,8b,a.,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6.,p,8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,2g6,b,c6.,8b,a,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6
-# zelda_woods:d=4,o=5,b=140:8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8b6,8g6,2e6,8d6,8e6,8g6,2e6,8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8e7,8b6,2g6,8b6,8g6,8d6,2e6
-#MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d";
-# http://www.fodor.sk/Spectrum/rttl.htm
-# https://www.end2endzone.com/how-to-convert-arduino-code-to-actual-rtttl-melodies-using-librtttl-and-anyrtttl/
+        - script.execute: gradient_demo
 
 i2c:
   sda: 21
@@ -181,7 +184,7 @@ light:
     num_leds: 1
     type: GRB
     default_transition_length: 0s
-    restore_mode: ALWAYS_OFF # not used by now, have experiments not leak into restart!
+    restore_mode: ALWAYS_OFF # not used right now, have experiments not leak into restart!
     internal: true
 
     # neopixelbus works SO MUCH better than fastled_clockless for this one!

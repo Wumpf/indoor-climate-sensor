@@ -44,7 +44,7 @@ static float get_normalized_co2(float co2)
     return std::min(1.0f, std::max(0.0f, co2 - min_expected_co2) / (max_expected_co2 - min_expected_co2));
 }
 
-static void set_light_color_to_co2(float co2, esphome::light::AddressableLightState* light)
+static void set_light_color_to_co2(float co2, light::AddressableLightState* light)
 {
     float normalized_co2 = get_normalized_co2(co2);
     set_light_color_to_gradient(normalized_co2, light->get_default_transition_length(), light);
