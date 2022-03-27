@@ -38,8 +38,6 @@ wifi:
 # (I disabled the default fallback access point)
 
 
-
-
 # -------------------------
 # Substitutions & Globals
 # -------------------------
@@ -52,6 +50,9 @@ globals:
   - id: enable_recoverysong
     type: bool
     initial_value: 'true'
+  - id: running_gradient_demo
+    type: bool
+    initial_value: 'false'
 
 # -------------------------
 # Components
@@ -69,7 +70,40 @@ binary_sensor:
     internal: true
     on_press:
       then:
-        - rtttl.play: Entertainer:d=4,o=5,b=140:8d,8d#,8e,c6,8e,c6,8e,2c.6,8c6,8d6,8d#6,8e6,8c6,8d6,e6,8b,d6,2c6,p,8d,8d#,8e,c6,8e,c6,8e,2c.6,8p,8a,8g,8f#,8a,8c6,e6,8d6,8c6,8a,2d6
+        - if:
+            condition:
+              lambda: 'return !id(running_gradient_demo);'
+            then:
+              # CO2 gradient demo
+              - globals.set:
+                  id: running_gradient_demo
+                  value: 'true'
+              - lambda: 'set_light_color_to_gradient(0.0, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.1, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.2, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.3, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.4, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.5, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.6, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.7, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.8, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(0.9, 0, id(led_external));'
+              - delay: 0.3s
+              - lambda: 'set_light_color_to_gradient(1.0, 0, id(led_external));'
+              - globals.set:
+                  id: running_gradient_demo
+                  value: 'false'
+
+#- rtttl.play: RR:d=4,o=5,b=200:8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,d6,8p,d6,8p,c6,8b,a.,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6.,p,8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,2g6,b,c6.,8b,a,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6
 # RR:d=4,o=5,b=200:8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,d6,8p,d6,8p,c6,8b,a.,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6.,p,8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,2g6,b,c6.,8b,a,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6
 # zelda_woods:d=4,o=5,b=140:8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8b6,8g6,2e6,8d6,8e6,8g6,2e6,8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8e7,8b6,2g6,8b6,8g6,8d6,2e6
 #MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d";
@@ -91,20 +125,15 @@ sensor:
       filters:
         - lambda: |-
             static bool first_run = true;
-            if (first_run) {
+            if (first_run || x < 100.0) { // smaller than 100 is obviously garbage
               first_run = false;
               return {};
             } else {
-              return x;
+              return std::min(x, 3000.0f); // if you blew on it I won't make it blow up!
             }
       on_value:
         then:
-          - light.addressable_set:
-              id: "led_external"
-              red: !lambda "return co2_to_color_component<0>(x);"
-              green: !lambda "return co2_to_color_component<1>(x);"
-              blue: !lambda "return co2_to_color_component<2>(x);"
-      #on_value_range: # triggers only when entering/existing an interval. Control this manually here!
+          - lambda: 'if (!id(running_gradient_demo)) set_light_color_to_co2(x, id(led_external));'
           - if:
               condition:
                 lambda: 'return x > 1100.0;'
@@ -144,22 +173,27 @@ status_led:
   pin: GPIO2   # yes it's a stripping pin yada yada -.-
 
 light:
-  - platform: fastled_clockless
+  - platform: neopixelbus 
     name: "Onboard RGB"
     id: "led_internal"
-    chipset: WS2812
+    variant: WS2812
     pin: GPIO5
     num_leds: 1
-    rgb_order: GRB
+    type: GRB
     default_transition_length: 0s
+    restore_mode: ALWAYS_OFF # not used by now, have experiments not leak into restart!
     internal: true
-  - platform: fastled_clockless
+
+    # neopixelbus works SO MUCH better than fastled_clockless for this one!
+    # fastled_clockless sometimes dropped colors/transitions
+  - platform: neopixelbus
     name: "External RGB"
     id: "led_external"
-    chipset: WS2812
+    variant: WS2812
     pin: GPIO26
     num_leds: 1
-    rgb_order: RGB
-    default_transition_length: 2.0s
+    type: RGB
+    default_transition_length: 8.0s
     restore_mode: ALWAYS_ON
+    gamma_correct: 1.0  # turning off making the "co2 gradient" nicer. Otherwise it's hard to distinguish reds!
     internal: true
