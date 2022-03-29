@@ -128,7 +128,7 @@ i2c:
 
 sensor:
   - platform: scd4x
-    update_interval: 15s
+    update_interval: 20s
     co2:
       name: "Room Sensor 1 - CO2"
       id: "co2"
@@ -152,7 +152,7 @@ sensor:
                 - rtttl.play: ${alarmsong}
           - if:
               condition:
-                lambda: 'return !id(silent_mode) && x > 750.0;'
+                lambda: 'return !id(silent_mode) && x > 850.0;'
               then:
                 - globals.set:
                     id: enable_recoverysong
