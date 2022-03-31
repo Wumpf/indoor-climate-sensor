@@ -144,22 +144,26 @@ sensor:
             }
       on_value:
         then:
-          - lambda: 'if (!id(silent_mode)) set_light_color_to_co2(x, id(led_external));'
           - if:
               condition:
-                lambda: 'return x > 1100.0;'
+                - lambda: 'return !id(silent_mode);'
+              then:
+                - lambda: 'set_light_color_to_co2(x, id(led_external));'
+                - if:
+                    condition:
+                      lambda: 'return x > 1100.0;'
               then:
                 - rtttl.play: ${alarmsong}
           - if:
               condition:
-                lambda: 'return !id(silent_mode) && x > 850.0;'
+                      lambda: 'return x > 850.0;'
               then:
                 - globals.set:
                     id: enable_recoverysong
                     value: 'true'
           - if:
               condition:
-                lambda: 'return !id(silent_mode) && x < 650.0 && id(enable_recoverysong);'
+                      lambda: 'return x < 650.0 && id(enable_recoverysong);'
               then:
                 - rtttl.play: ${recoverysong}
                 - globals.set:
