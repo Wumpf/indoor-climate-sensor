@@ -1,16 +1,18 @@
-// We could do this stuff in the yaml file. But this is sooo much easier and more compact :)
-
-// -----------------------
+#include "cpplogic.h"
 
 // relevant range for the led, outside we clamp
-constexpr float min_expected_co2 = 600;
-constexpr float max_expected_co2 = 1100;
+constexpr float min_expected_co2 = 600.0f;
+constexpr float max_expected_co2 = 1100.0f;
 
 struct ColorF { float r, g, b; };
 constexpr ColorF color_good = { 0.0, 1.0, 0.0 };
 constexpr ColorF color_meh =  { 0.8, 0.4, 0.0 };
 constexpr ColorF color_bad =  { 1.0, 0.0, 0.0 };
+
 constexpr float led_brightness = 0.2f;
+
+static constexpr float max_color_change_time_in_seconds = 5.0f;
+static constexpr float gradient_change_per_ms = 1.0f / (max_color_change_time_in_seconds * 1000.0f);
 
 const std::string recoverysong = "Cantina:d=4, o=5, b=250:8a, 8p, 8d6, 8p, 8a, 8p, 8d6, 8p, 8a, 8d6, 8p, 8a, 8p, 8g#, a, 8a, 8g#, 8a, g, 8f#, 8g, 8f#, f., 8d., 16p, p., 8a, 8p, 8d6, 8p, 8a, 8p, 8d6, 8p, 8a, 8d6, 8p, 8a, 8p, 8g#, 8a, 8p, 8g, 8p, g., 8f#, 8g, 8p, 8c6, a#, a, g";
 const std::string alarmsong = "alarm:d=4,o=5,b=100:16e6,16e6,4p,16e6,16e6,4p,16e6,16e6,4p,16e6,16e6";
@@ -22,10 +24,6 @@ const std::string alarmsong = "alarm:d=4,o=5,b=100:16e6,16e6,4p,16e6,16e6,4p,16e
 
 // -----------------------
 
-// Hack to make VSCode autocomplete happy
-#ifndef USE_ESP32
-    #include ".esphome/build/indoor-climate-one/src/esphome.h"
-#endif
 
 ColorF lerp(float completion, ColorF start, ColorF end)
 {
@@ -36,7 +34,7 @@ ColorF lerp(float completion, ColorF start, ColorF end)
     };
 }
 
-static void set_light_color_to_gradient(float gradient, uint32_t transition_ms, esphome::light::AddressableLightState* light)
+static void set_light_color_to_gradient(float gradient, esphome::light::AddressableLightState* light)
 {
     auto color = lerp(max(0.0f, gradient * 2.0f - 1.0f), 
                     lerp(min(1.0f, gradient * 2.0f), color_good, color_meh), 
@@ -48,22 +46,39 @@ static void set_light_color_to_gradient(float gradient, uint32_t transition_ms, 
     call.perform();
 }
 
-static float get_normalized_co2(float co2)
+static float get_gradientval_from_co2(float co2)
 {
     return std::min(1.0f, std::max(0.0f, co2 - min_expected_co2) / (max_expected_co2 - min_expected_co2));
 }
 
-static void set_light_color_to_co2(float co2, light::AddressableLightState* light)
+void on_loop(const float& target_led_gradient_value, esphome::light::AddressableLightState* light)
 {
-    float normalized_co2 = get_normalized_co2(co2);
-    set_light_color_to_gradient(normalized_co2, light->get_default_transition_length(), light);
+    static uint32_t millis_last_call = millis();
+    uint32_t millis_now = millis();
+
+    static float display_gradient_val = target_led_gradient_value;
+
+    if (display_gradient_val != target_led_gradient_value)
+    {
+        auto dt = millis_now - millis_last_call;
+
+        float gradient_change = dt * gradient_change_per_ms;
+        if (display_gradient_val > target_led_gradient_value)
+            display_gradient_val = std::max(target_led_gradient_value, display_gradient_val - gradient_change);
+        else
+            display_gradient_val = std::min(target_led_gradient_value, display_gradient_val + gradient_change);
+
+        set_light_color_to_gradient(display_gradient_val, light);
+    }
+
+    millis_last_call = millis_now;
 }
 
-static void on_new_co2(float co2, light::AddressableLightState* light, rtttl::Rtttl* rtttl)
+void on_new_co2(float co2, float& target_led_gradient_value, esphome::rtttl::Rtttl* rtttl)
 {
-    float normalized_co2 = get_normalized_co2(co2);
-    set_light_color_to_gradient(normalized_co2, light->get_default_transition_length(), light);
+    target_led_gradient_value = get_gradientval_from_co2(co2);
 
+    // Handle buzzer
     static bool enable_recoverysong = false;
     if (co2 > 1100.0f)
         rtttl->play(alarmsong);

@@ -1,7 +1,11 @@
 esphome:
   name: indoor-climate-one
   includes:
-    - co2tocolor.h
+    - cpplogic.h
+    - cpplogic.cpp
+  on_loop:
+      then:
+        - lambda: on_loop(id(target_led_gradient_value), id(led_external));
 
 esp32:
   # TODO: board isn't quite right
@@ -26,7 +30,7 @@ api:
       variables:
         simulated_co2: float
       then:
-        - lambda: on_new_co2(simulated_co2, id(led_external), id(buzzer));
+        - lambda: on_new_co2(simulated_co2, id(target_led_gradient_value), id(buzzer));
 
 # Enable over the air updates
 ota:
@@ -61,41 +65,9 @@ globals:
   - id: silent_mode
     type: bool
     initial_value: 'false'
-
-script:
-  - id: gradient_demo
-    then:
-      - if:
-          condition:
-            lambda: 'return !id(silent_mode);'
-          then:
-            - globals.set:
-                id: silent_mode
-                value: 'true'
-            - lambda: 'set_light_color_to_gradient(0.0, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.1, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.2, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.3, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.4, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.5, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.6, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.7, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.8, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(0.9, 100, id(led_external));'
-            - delay: 0.3s
-            - lambda: 'set_light_color_to_gradient(1.0, 100, id(led_external));'
-            - globals.set:
-                id: silent_mode
-                value: 'false'
+  - id: target_led_gradient_value
+    type: float
+    initial_value: 0.5f
 
 # -------------------------
 # Components
@@ -113,7 +85,6 @@ binary_sensor:
     internal: true
     on_press:
       then:
-      # - script.execute: gradient_demo
         - lambda: id(silent_mode) = !id(silent_mode);
         - if:
             condition:
@@ -121,7 +92,7 @@ binary_sensor:
             then:
               - light.turn_off: led_external
             else:
-              - lambda: set_light_color_to_co2(id(co2).state, id(led_external));
+              - lambda: on_new_co2(id(co2).state, id(target_led_gradient_value), id(buzzer));
 
 i2c:
   sda: 21
@@ -146,7 +117,7 @@ sensor:
             }
       on_value:
         then:
-          - lambda: on_new_co2(x, id(led_external), id(buzzer));
+          - lambda: on_new_co2(x, id(target_led_gradient_value), id(buzzer));
     temperature:
       name: "Room Sensor 1 - Temperature"
       id: "temperature"
@@ -178,7 +149,7 @@ light:
     restore_mode: ALWAYS_OFF # not used right now, have experiments not leak into restart!
     internal: true
 
-    # neopixelbus works SO MUCH better than fastled_clockless for this one!
+    # neopixelbus works better than fastled_clockless for this one!
     # fastled_clockless sometimes dropped colors/transitions
   - platform: neopixelbus
     name: "External RGB"
@@ -187,7 +158,8 @@ light:
     pin: GPIO26
     num_leds: 1
     type: RGB
-    default_transition_length: 8.0s
-    restore_mode: ALWAYS_ON
-    gamma_correct: 1.0  # turning off making the "co2 gradient" nicer. Otherwise it's hard to distinguish reds!
+    # Built-in transition was giving me transitions through red or green depending on dominant color even on miniscule changes in orange
+    # Still puzzled about this, but ended up coding my own transition effect via on_loop which has the advantage of closely following the gradient!
+    default_transition_length: 0.0s
+    gamma_correct: 0.0  # turning off making the "co2 gradient" nicer (0 is an early out, so better than 1). Otherwise it's hard to distinguish reds!
     internal: true
