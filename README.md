@@ -3,6 +3,16 @@ Indoor Climate Sensor
 
 Simple [ESPHome](https://esphome.io/) based indoor climate sensor with buzzer and color LED.
 
+Usage
+--------------
+
+[Install esp command line tools](https://esphome.io/guides/installing_esphome.html)
+
+Connect esp32 and run:
+```
+esphome run indoor-climate-one.yaml
+```
+After first run OTA updates are possible.
 
 Hardware used
 ---------------
