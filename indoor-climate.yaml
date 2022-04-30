@@ -92,7 +92,7 @@ i2c:
 
 sensor:
   - platform: scd4x
-    update_interval: 20s
+    update_interval: 30s
     co2:
       name: "${devicename_nice} - CO2"
       id: "co2"
