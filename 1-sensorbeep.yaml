@@ -1,0 +1,5 @@
+substitutions:
+  devicename: indoor-climate-one
+  devicename_nice: Sensorbeep
+
+<<: !include indoor-climate.yaml

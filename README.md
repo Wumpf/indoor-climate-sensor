@@ -10,7 +10,7 @@ Usage
 
 Connect esp32 and run:
 ```
-esphome run indoor-climate-one.yaml
+esphome run 0-sensorita.yaml
 ```
 After first run OTA updates are possible.
 

@@ -1,0 +1,5 @@
+substitutions:
+  devicename: indoor-climate-zero
+  devicename_nice: Sensorita
+
+<<: !include indoor-climate.yaml

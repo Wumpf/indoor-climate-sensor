@@ -1,5 +1,5 @@
 esphome:
-  name: indoor-climate-one
+  name: ${devicename}
   includes:
     - cpplogic.h
     - cpplogic.cpp
@@ -44,22 +44,13 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   fast_connect: true  # there is only one network around here, use that right away.
-# (I disabled the default fallback access point)
+  use_address: ${devicename}
+# (I removed the default fallback access point)
 
 
 # -------------------------
-# Substitutions & Globals
+# Globals
 # -------------------------
-
-substitutions:
-  recoverysong: Cantina:d=4, o=5, b=250:8a, 8p, 8d6, 8p, 8a, 8p, 8d6, 8p, 8a, 8d6, 8p, 8a, 8p, 8g#, a, 8a, 8g#, 8a, g, 8f#, 8g, 8f#, f., 8d., 16p, p., 8a, 8p, 8d6, 8p, 8a, 8p, 8d6, 8p, 8a, 8d6, 8p, 8a, 8p, 8g#, 8a, 8p, 8g, 8p, g., 8f#, 8g, 8p, 8c6, a#, a, g
-  alarmsong: alarm:d=4,o=5,b=100:16e6,16e6,4p,16e6,16e6,4p,16e6,16e6,4p,16e6,16e6
-# RR:d=4,o=5,b=200:8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,d6,8p,d6,8p,c6,8b,a.,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6.,p,8g,8a,8c6,8a,e6,8p,e6,8p,d6.,p,8p,8g,8a,8c6,8a,2g6,b,c6.,8b,a,8g,8a,8c6,8a,2c6,d6,b,a,g.,8p,g,2d6,2c6
-# zelda_woods:d=4,o=5,b=140:8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8b6,8g6,2e6,8d6,8e6,8g6,2e6,8f6,8a6,b6,8f6,8a6,b6,8f6,8a6,8b6,8e7,d7,8b6,8c7,8e7,8b6,2g6,8b6,8g6,8d6,2e6
-# MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d
-# http://www.fodor.sk/Spectrum/rttl.htm
-# https://www.end2endzone.com/how-to-convert-arduino-code-to-actual-rtttl-melodies-using-librtttl-and-anyrtttl/
-
 
 globals:
   - id: silent_mode
@@ -103,7 +94,7 @@ sensor:
   - platform: scd4x
     update_interval: 20s
     co2:
-      name: "Room Sensor 1 - CO2"
+      name: "${devicename_nice} - CO2"
       id: "co2"
       # discard first value (it's typically garbage)
       filters:
@@ -119,10 +110,10 @@ sensor:
         then:
           - lambda: on_new_co2(x, id(target_led_gradient_value), id(buzzer));
     temperature:
-      name: "Room Sensor 1 - Temperature"
+      name: "${devicename_nice} - Temperature"
       id: "temperature"
     humidity:
-      name: "Room Sensor 1 - Humidity"
+      name: "${devicename_nice} - Humidity"
       id: "humidity"
 
 output:
