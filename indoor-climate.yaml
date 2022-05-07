@@ -8,9 +8,9 @@ esphome:
       - lambda: on_loop(id(target_led_gradient_value), id(led_external), id(silent_mode));
 
 esp32:
-  # TODO: board isn't quite right
+  # Using a firebeetle32e, but firebeetle seems to be the right class for that
   # https://github.com/platformio/platform-espressif32/pull/745
-  board: featheresp32
+  board: firebeetle32
   framework:
     type: arduino
 
