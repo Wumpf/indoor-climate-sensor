@@ -47,4 +47,17 @@ Response times to change of the sensor are
 Response time define as "Time for achieving 63% of a respective step function".
 (see [datasheet](https://sensirion.com/media/documents/C4B87CE6/61652F80/Sensirion_CO2_Sensors_SCD4x_Datasheet.pdf))
 
-So reporting a new value every 30 seconds (`indoor-climate.yaml#sensor/update_interval`) is maybe a bit on the optimistic side.
+Periodic measurement time is 5 seconds.
+There is also a power saving mode in which measurements are taken only every 30 seconds, but as of writing ESPHome doesn't expose this.
+
+Note on calibration
+--------------
+
+The SCD41 calibrates itself by default, but for this to work it needs to be exposed to ~400PPM (i.e. outdoors) at least once a week. This [blog](https://emariete.com/en/sensor-co2-sensirion-scd40-scd41-2/#Calibracion_automatica) further notes that:
+
+> Although, we generally talk about the sensor taking 7 days to calibrate, to be precise, what you need are 7 good measurements separated by at least 18 hours (that is, approximately 5 days).
+
+Generally, any settings are not written to the EEPROM (which only lives for ~2000 write cycles!). Calibration history however is automatically stored in a separate EEPROM "dimensioned for the specified sensor lifetime".
+
+Factory default for temperature offset is 4C because of assumed self-heating.
+CO2 measurement accuracy is independent of temperature offset
