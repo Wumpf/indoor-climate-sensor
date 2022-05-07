@@ -94,7 +94,7 @@ i2c:
 
 sensor:
   - platform: scd4x
-    update_interval: 30s
+    update_interval: 15s
     co2:
       name: "${devicename_nice} - CO2"
       id: "co2"
@@ -111,9 +111,9 @@ sensor:
       on_value:
         - if:
             condition:
-              lambda: 'return !id(silent_mode);'
-          then:
-                lambda: on_new_co2(x, id(target_led_gradient_value), id(buzzer));
+              lambda: 'return id(silent_mode);'
+            then:
+              lambda: on_new_co2(x, id(target_led_gradient_value), id(buzzer));
     temperature:
       name: "${devicename_nice} - Temperature"
       id: "temperature"
@@ -123,7 +123,7 @@ sensor:
 
 output:
   - platform: ledc
-    pin: GPIO25
+    pin: GPIO26
     id: pin_buzzer
 
 rtttl:
@@ -151,7 +151,7 @@ light:
     name: "External RGB"
     id: "led_external"
     variant: WS2812
-    pin: GPIO26
+    pin: GPIO25
     num_leds: 1
     type: RGB
     # Built-in transition was giving me transitions through red or green depending on dominant color even on miniscule changes in orange
