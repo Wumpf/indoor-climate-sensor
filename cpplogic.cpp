@@ -58,7 +58,7 @@ static float get_gradientval_from_co2(float co2)
     return std::min(1.0f, std::max(0.0f, co2 - min_expected_co2) / (max_expected_co2 - min_expected_co2));
 }
 
-void on_loop(const float& target_led_gradientval, esphome::light::AddressableLightState* light)
+void on_loop(const float& target_led_gradientval, esphome::light::AddressableLightState* light, bool silent_mode)
 {
     static uint32_t millis_last_call = millis();
     uint32_t millis_now = millis();
@@ -75,7 +75,8 @@ void on_loop(const float& target_led_gradientval, esphome::light::AddressableLig
         else
             display_gradient_val = std::min(target_led_gradientval, display_gradient_val + gradient_change);
 
-        set_light_color_to_gradient(display_gradient_val, light,  display_gradient_val == target_led_gradientval);
+        if (!silent_mode)
+            set_light_color_to_gradient(display_gradient_val, light,  display_gradient_val == target_led_gradientval);
     }
 
     millis_last_call = millis_now;

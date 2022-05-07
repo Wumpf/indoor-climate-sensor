@@ -4,8 +4,8 @@ esphome:
     - cpplogic.h
     - cpplogic.cpp
   on_loop:
-      then:
-        - lambda: on_loop(id(target_led_gradient_value), id(led_external));
+    then:
+      - lambda: on_loop(id(target_led_gradient_value), id(led_external), id(silent_mode));
 
 esp32:
   # TODO: board isn't quite right
@@ -76,6 +76,8 @@ binary_sensor:
     internal: true
     on_press:
       then:
+        - rtttl.play:
+            rtttl: twoshort:d=4,o=5,b=100:16e6,16e6
         - lambda: id(silent_mode) = !id(silent_mode);
         - if:
             condition:
@@ -107,8 +109,11 @@ sensor:
               return std::min(x, 3000.0f); // if you blew on it I won't make it blow up!
             }
       on_value:
-        then:
-          - lambda: on_new_co2(x, id(target_led_gradient_value), id(buzzer));
+        - if:
+            condition:
+              lambda: 'return !id(silent_mode);'
+          then:
+                lambda: on_new_co2(x, id(target_led_gradient_value), id(buzzer));
     temperature:
       name: "${devicename_nice} - Temperature"
       id: "temperature"
