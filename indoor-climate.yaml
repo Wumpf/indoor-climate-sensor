@@ -31,6 +31,12 @@ api:
         simulated_co2: float
       then:
         - lambda: on_new_co2(simulated_co2, id(target_led_gradient_value), id(buzzer));
+    - service: perform_forced_calibration
+      variables:
+        current_co2: int
+      then:
+        - scd4x.perform_forced_calibration:
+            co2: !lambda 'return current_co2;'
 
 # Enable over the air updates
 ota:
@@ -47,6 +53,10 @@ wifi:
   use_address: ${devicename}
 # (I removed the default fallback access point)
 
+
+# TODO: Publish all modifications
+external_components:
+  - source: custom_components
 
 # -------------------------
 # Globals
@@ -95,6 +105,7 @@ i2c:
 sensor:
   - platform: scd4x
     update_interval: 15s
+    automatic_self_calibration: false
     co2:
       name: "${devicename_nice} - CO2"
       id: "co2"
@@ -111,7 +122,7 @@ sensor:
       on_value:
         - if:
             condition:
-              lambda: 'return id(silent_mode);'
+              lambda: 'return !id(silent_mode);'
             then:
               lambda: on_new_co2(x, id(target_led_gradient_value), id(buzzer));
     temperature:

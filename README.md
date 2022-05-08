@@ -61,3 +61,8 @@ Generally, any settings are not written to the EEPROM (which only lives for ~200
 
 Factory default for temperature offset is 4C because of assumed self-heating.
 CO2 measurement accuracy is independent of temperature offset
+
+
+As automatic calibration requires outdoor air every few days while the sensor is on, I disabled automatic self calibration and instead manually calibrated the sensor.
+
+TODO: Get forced calibration action upstream.
