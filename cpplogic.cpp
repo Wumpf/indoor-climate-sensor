@@ -1,10 +1,15 @@
 #include "cpplogic.h"
+// #include "esphome/core/log.h"
+
+// using namespace esphome; // Need this to get log macros working
+// static const char *const TAG = "cpplogic";
 
 // relevant range for the led, outside we clamp
 constexpr float min_expected_co2 = 600.0f;
 constexpr float max_expected_co2 = 1100.0f;
 
 struct ColorF { float r, g, b; };
+constexpr ColorF color_nodata = { 0.0, 0.0, 1.0 };
 constexpr ColorF color_good = { 0.0, 1.0, 0.0 };
 constexpr ColorF color_meh =  { 0.8, 0.4, 0.0 };
 constexpr ColorF color_bad =  { 1.0, 0.0, 0.0 };
@@ -37,16 +42,21 @@ ColorF lerp(float completion, ColorF start, ColorF end)
 static void set_light_color_to_gradient(float gradient, esphome::light::AddressableLightState* light, bool force)
 {
     // Only stress the light with new values if we made a significant enough change.
-    static float last_set_display_gradient_val = -1.0;
+    static float last_set_display_gradient_val = -10.0;
     if (!force && fabs(last_set_display_gradient_val - gradient) < 0.02)
         return;
 
-    auto color = lerp(max(0.0f, gradient * 2.0f - 1.0f), 
-                    lerp(min(1.0f, gradient * 2.0f), color_good, color_meh), 
-                    color_bad);
+    ColorF color;
+    if (gradient < 0.0)
+        color = lerp(gradient + 1.0, color_nodata, color_good);
+    else if (gradient < 0.5)
+        color = lerp(gradient * 2.0, color_good, color_meh);
+    else
+        color = lerp(gradient * 2.0 - 1.0, color_meh, color_bad);
 
     auto call = light->turn_on();
-    call.set_brightness(led_brightness);
+    if (light->current_values.get_brightness() != led_brightness)
+        call.set_brightness(led_brightness);
     call.set_rgb(color.r, color.g, color.b);
     call.perform();
 
@@ -60,16 +70,19 @@ static float get_gradientval_from_co2(float co2)
 
 void on_loop(const float& target_led_gradientval, esphome::light::AddressableLightState* light, bool silent_mode)
 {
-    static uint32_t millis_last_call = millis();
-    uint32_t millis_now = millis();
+    static uint32_t millis_last_call = esphome::millis();
+    uint32_t millis_now = esphome::millis();
 
-    static float display_gradient_val = target_led_gradientval;
+    static float display_gradient_val = -0.9; // Not -1.0 so we set the color in the beginning.
 
     if (display_gradient_val != target_led_gradientval)
     {
         auto dt = millis_now - millis_last_call;
 
         float gradient_change = dt * gradient_change_per_ms;
+        if (display_gradient_val < 0.0) // Go faster in the negative/"no data" region
+            gradient_change *= 2.0;
+
         if (display_gradient_val > target_led_gradientval)
             display_gradient_val = std::max(target_led_gradientval, display_gradient_val - gradient_change);
         else

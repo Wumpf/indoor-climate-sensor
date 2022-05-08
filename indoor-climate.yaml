@@ -58,7 +58,7 @@ globals:
     initial_value: 'false'
   - id: target_led_gradient_value
     type: float
-    initial_value: 0.5f
+    initial_value: -1.0f  # "no data"
 
 # -------------------------
 # Components
@@ -154,6 +154,9 @@ light:
     pin: GPIO25
     num_leds: 1
     type: RGB
+    # on startup we have no data, so no point in restoring.
+    # We set an invalid color, but if that fails for some reason, don't turn the lamp off otherwise it looks like the device is broken!
+    restore_mode: ALWAYS_ON
     # Built-in transition was giving me transitions through red or green depending on dominant color even on miniscule changes in orange
     # Still puzzled about this, but ended up coding my own transition effect via on_loop which has the advantage of closely following the gradient!
     default_transition_length: 0.0s
