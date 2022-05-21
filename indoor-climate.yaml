@@ -79,11 +79,11 @@ switch:
     optimistic: true
     on_turn_on:
       - rtttl.play:
-          rtttl: off:d=4,o=5,b=100:16e6,16d6
+          rtttl: off:d=4,o=6,b=150:8f#,8d#,8b5
       - light.turn_off: led_external
     on_turn_off:
       - rtttl.play:
-          rtttl: on:d=4,o=5,b=100:16e6,16f#6
+          rtttl: on:d=4,o=6,b=150:8b5,8d#,8f#
       - light.turn_on: led_external
       - lambda: on_new_co2(id(co2).state, id(target_led_gradient_value), id(buzzer));
 
