@@ -48,7 +48,7 @@ Response time define as "Time for achieving 63% of a respective step function".
 (see [datasheet](https://sensirion.com/media/documents/C4B87CE6/61652F80/Sensirion_CO2_Sensors_SCD4x_Datasheet.pdf))
 
 Periodic measurement time is 5 seconds.
-There is also a power saving mode in which measurements are taken only every 30 seconds, but as of writing ESPHome doesn't expose this.
+There is also a power saving mode in which measurements are taken only every 30 seconds.
 
 Note on calibration
 --------------
@@ -63,6 +63,4 @@ Factory default for temperature offset is 4C because of assumed self-heating.
 CO2 measurement accuracy is independent of temperature offset
 
 
-As automatic calibration requires outdoor air every few days while the sensor is on, I disabled automatic self calibration and instead manually calibrated the sensor.
-
-TODO: Get forced calibration action upstream.
+As automatic calibration requires outdoor air every few days while the sensor is on, I disabled automatic self calibration and instead manually calibrated the sensor. (This requires esphome 2022.5.0 or newer which adds manual calibration to scd4x)

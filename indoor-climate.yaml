@@ -36,7 +36,7 @@ api:
         current_co2: int
       then:
         - scd4x.perform_forced_calibration:
-            co2: !lambda 'return current_co2;'
+            value: !lambda 'return current_co2;'
 
 # Enable over the air updates
 ota:
