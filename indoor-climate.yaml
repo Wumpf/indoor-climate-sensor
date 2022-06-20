@@ -110,6 +110,7 @@ sensor:
   - platform: scd4x
     update_interval: 15s
     automatic_self_calibration: false
+    temperature_offset: ${temperature_offset}
     co2:
       name: "${devicename_nice} - CO2"
       id: "co2"

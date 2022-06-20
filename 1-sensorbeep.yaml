@@ -1,5 +1,6 @@
 substitutions:
   devicename: indoor-climate-one
   devicename_nice: Sensorbeep
+  temperature_offset: 4.0C
 
 <<: !include indoor-climate.yaml

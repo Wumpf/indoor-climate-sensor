@@ -1,5 +1,6 @@
 substitutions:
   devicename: indoor-climate-zero
   devicename_nice: Sensorita
+  temperature_offset: 7.2C
 
 <<: !include indoor-climate.yaml
