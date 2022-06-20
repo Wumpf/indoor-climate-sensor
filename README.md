@@ -14,6 +14,8 @@ esphome run 0-sensorita.yaml
 ```
 After first run OTA updates are possible.
 
+Tested with esphome `2022.6.1`
+
 Hardware used
 ---------------
 

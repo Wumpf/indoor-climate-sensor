@@ -53,10 +53,8 @@ wifi:
   use_address: ${devicename}
 # (I removed the default fallback access point)
 
-
-# TODO: Publish all modifications
-external_components:
-  - source: custom_components
+# external_components:
+#   - source: custom_components
 
 # -------------------------
 # Globals
